@@ -64,6 +64,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     demo_parser.add_argument("--synthetic", action="store_true", default=True)
 
+    # 6. dashboard / serve
+    dash_parser = subparsers.add_parser(
+        "dashboard", aliases=["serve"], help="Launch interactive visual web dashboard"
+    )
+    dash_parser.add_argument("--host", type=str, default="127.0.0.1", help="Host interface (default: 127.0.0.1)")
+    dash_parser.add_argument("--port", type=int, default=8000, help="Port to listen on (default: 8000)")
+    dash_parser.add_argument("--run-dir", type=str, default=None, help="Specific experiment run directory to visualize")
+
     return parser
 
 
@@ -159,6 +167,22 @@ def handle_demo(args: argparse.Namespace) -> int:
     return 0
 
 
+def handle_dashboard(args: argparse.Namespace) -> int:
+    import uvicorn
+    from regimeflow.api import create_app
+
+    print("=" * 60)
+    print("LAUNCHING REGIMEFLOW INTERACTIVE DASHBOARD")
+    print(f"Web Dashboard URL: http://{args.host}:{args.port}/")
+    print(f"Swagger API Docs:  http://{args.host}:{args.port}/docs")
+    print("Press Ctrl+C to terminate the dashboard server.")
+    print("=" * 60)
+
+    app = create_app(run_dir=args.run_dir)
+    uvicorn.run(app, host=args.host, port=args.port, log_level="info")
+    return 0
+
+
 def main(args: list[str] | None = None) -> int:
     parser = build_parser()
     parsed_args = parser.parse_args(args)
@@ -177,6 +201,8 @@ def main(args: list[str] | None = None) -> int:
         return handle_make_report(parsed_args)
     elif parsed_args.command == "demo":
         return handle_demo(parsed_args)
+    elif parsed_args.command in ["dashboard", "serve"]:
+        return handle_dashboard(parsed_args)
 
     return 0
 

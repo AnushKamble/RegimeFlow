@@ -68,3 +68,31 @@ def test_api_dimension_mismatch():
     response = client.post("/predict-regime", json=payload)
     assert response.status_code == 400
     assert "dimension mismatch" in response.json()["detail"].lower()
+
+
+def test_dashboard_endpoints():
+    app = create_app()
+    client = TestClient(app)
+
+    # 1. Test HTML Dashboard
+    resp_root = client.get("/")
+    assert resp_root.status_code == 200
+    assert "RegimeFlow" in resp_root.text
+    assert "<!DOCTYPE html>" in resp_root.text
+
+    resp_dash = client.get("/dashboard")
+    assert resp_dash.status_code == 200
+    assert "RegimeFlow" in resp_dash.text
+
+    # 2. Test Timeseries & Summary Data Endpoints
+    resp_summary = client.get("/api/data/summary")
+    if resp_summary.status_code == 200:
+        data = resp_summary.json()
+        assert "Buy_and_Hold" in data or "Regime_Aware_Risk_Control" in data
+
+    resp_ts = client.get("/api/data/timeseries")
+    if resp_ts.status_code == 200:
+        ts_data = resp_ts.json()
+        assert "dates" in ts_data
+        assert "nav_regime" in ts_data
+        assert "high_risk_prob" in ts_data
