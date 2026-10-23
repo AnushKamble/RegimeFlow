@@ -1,5 +1,7 @@
 """
 HTML/CSS/JavaScript single-page application template for the RegimeFlow Visual Dashboard.
+Includes interactive Chart.js visualizations, in-page image modal (no tab redirection),
+dynamic KPI loading, and live causal filter simulator playground.
 """
 
 
@@ -12,7 +14,7 @@ def get_dashboard_html() -> str:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RegimeFlow — Probabilistic Market Regime Engine</title>
     <!-- Chart.js for interactive financial visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --bg-primary: #0f172a;
@@ -42,7 +44,7 @@ def get_dashboard_html() -> str:
             flex-direction: column;
         }
         header {
-            background-color: rgba(30, 41, 59, 0.8);
+            background-color: rgba(30, 41, 59, 0.85);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--border-color);
             position: sticky;
@@ -68,6 +70,7 @@ def get_dashboard_html() -> str:
             justify-content: center;
             font-weight: bold;
             color: white;
+            font-size: 0.9rem;
         }
         .brand h1 {
             font-size: 1.25rem;
@@ -150,11 +153,14 @@ def get_dashboard_html() -> str:
         .card-subtitle {
             font-size: 0.8125rem;
             color: var(--text-secondary);
+            line-height: 1.4;
         }
         .value-emerald { color: var(--accent-emerald); }
         .value-blue { color: var(--accent-blue); }
         .value-rose { color: var(--accent-rose); }
         .value-amber { color: var(--accent-amber); }
+        .value-purple { color: var(--accent-purple); }
+        
         .grid-charts {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -211,6 +217,7 @@ def get_dashboard_html() -> str:
         tr:hover td {
             background-color: rgba(255, 255, 255, 0.02);
         }
+        
         /* Simulator playground */
         .simulator-grid {
             display: grid;
@@ -267,6 +274,9 @@ def get_dashboard_html() -> str:
             border-radius: 8px;
             padding: 1.25rem;
             height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .prob-bar {
             height: 8px;
@@ -278,23 +288,114 @@ def get_dashboard_html() -> str:
         }
         .prob-fill {
             height: 100%;
-            transition: width 0.4s ease;
+            transition: width 0.4s ease, background-color 0.4s ease;
         }
+        
+        /* Gallery grid and in-page modal lightbox */
         .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 1.25rem;
+        }
+        .gallery-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .gallery-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-blue);
         }
         .gallery-img {
             width: 100%;
-            border-radius: 8px;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+        }
+        .gallery-caption {
+            padding: 0.75rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .gallery-caption span {
+            color: var(--accent-blue);
+            font-size: 0.75rem;
+        }
+
+        /* In-page Modal Lightbox */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 2rem;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-container {
+            position: relative;
+            max-width: 90vw;
+            max-height: 85vh;
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .modal-content {
+            max-width: 100%;
+            max-height: 75vh;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+        .modal-caption {
+            margin-top: 0.75rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .modal-close {
+            position: absolute;
+            top: -16px;
+            right: -16px;
+            background: var(--accent-rose);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             transition: transform 0.2s;
         }
-        .gallery-img:hover {
-            transform: scale(1.02);
+        .modal-close:hover {
+            transform: scale(1.1);
         }
+
         footer {
             border-top: 1px solid var(--border-color);
             padding: 1.5rem 2rem;
@@ -316,7 +417,7 @@ def get_dashboard_html() -> str:
         <div style="display: flex; align-items: center; gap: 1rem;">
             <div class="badge">
                 <span class="pulse-dot"></span>
-                <span>Active Model Loaded</span>
+                <span>SPY 2000–2026 Walk-Forward (47 Folds)</span>
             </div>
             <nav>
                 <a href="#kpis">KPIs</a>
@@ -324,7 +425,7 @@ def get_dashboard_html() -> str:
                 <a href="#regimes">Regime Dynamics</a>
                 <a href="#stress">Stress Windows</a>
                 <a href="#simulator">Interactive Playground</a>
-                <a href="#gallery">Visual Gallery</a>
+                <a href="#gallery">Figure Gallery</a>
             </nav>
         </div>
     </header>
@@ -336,7 +437,7 @@ def get_dashboard_html() -> str:
                 <div>
                     <h2 style="font-size: 1.5rem; font-weight: 700;">Executive Performance Summary</h2>
                     <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                        Chronological Walk-Forward on SPY (5,922 OOS Sessions across 47 Folds, 2003–2026, Net of 10 bps friction)
+                        Chronological Walk-Forward on SPY (5,922 OOS Sessions, 2003–2026, Net of 10 bps friction & 1-day lag)
                     </div>
                 </div>
             </div>
@@ -357,7 +458,7 @@ def get_dashboard_html() -> str:
                 <div class="card" style="border-left: 4px solid var(--accent-blue);">
                     <div class="card-header">
                         <span class="card-title">Buy & Hold Benchmark</span>
-                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Passive Market</span>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Passive SPY</span>
                     </div>
                     <div class="card-value value-blue" id="kpi-bh-sharpe">0.535 Sharpe</div>
                     <div class="card-subtitle">
@@ -382,8 +483,8 @@ def get_dashboard_html() -> str:
 
                 <div class="card" style="border-left: 4px solid var(--accent-purple);">
                     <div class="card-header">
-                        <span class="card-title">Out-of-Sample Density Edge</span>
-                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Information Theory</span>
+                        <span class="card-title">OOS Predictive Density Edge</span>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Density Forecast</span>
                     </div>
                     <div class="card-value value-purple">+1.199 pts</div>
                     <div class="card-subtitle">
@@ -405,8 +506,8 @@ def get_dashboard_html() -> str:
                             <div style="font-size: 0.75rem; color: var(--text-secondary);">Simulated with 1-period execution lag & 10 bps turnover friction</div>
                         </div>
                         <div class="chart-actions">
-                            <button class="btn-toggle active" id="btn-scale-log" onclick="toggleScale('log')">Log Scale</button>
-                            <button class="btn-toggle" id="btn-scale-lin" onclick="toggleScale('linear')">Linear</button>
+                            <button class="btn-toggle active" id="btn-scale-lin" onclick="setEquityScale('linear')">Linear</button>
+                            <button class="btn-toggle" id="btn-scale-log" onclick="setEquityScale('logarithmic')">Log Scale</button>
                         </div>
                     </div>
                     <div class="chart-box">
@@ -417,8 +518,10 @@ def get_dashboard_html() -> str:
                 <!-- Underwater Drawdown Chart -->
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Underwater Drawdown Profile</span>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Peak-to-Trough Loss</div>
+                        <div>
+                            <span class="card-title">Underwater Drawdown Profile</span>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Peak-to-Trough Loss Exposure</div>
+                        </div>
                     </div>
                     <div class="chart-box">
                         <canvas id="drawdownChart"></canvas>
@@ -432,11 +535,11 @@ def get_dashboard_html() -> str:
             <div class="card">
                 <div class="card-header">
                     <div>
-                        <span class="card-title">Causal Filtered High-Risk Regime Probability vs. SPY Price</span>
+                        <span class="card-title">Causal Filtered High-Risk Regime Probability vs. SPY Cumulative Growth</span>
                         <div style="font-size: 0.75rem; color: var(--text-secondary);">Online P(z_t = Crisis | x_{1:t}) strictly invariant to future market data</div>
                     </div>
                 </div>
-                <div class="chart-box" style="height: 320px;">
+                <div class="chart-box" style="height: 340px;">
                     <canvas id="regimeChart"></canvas>
                 </div>
             </div>
@@ -489,7 +592,7 @@ def get_dashboard_html() -> str:
                 <!-- Bootstrap Uncertainty Table -->
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Non-IID Paired Block Bootstrap (L=21 Days)</span>
+                        <span class="card-title">Non-IID Paired Block Bootstrap (L=21 Days, B=1000)</span>
                     </div>
                     <table>
                         <thead>
@@ -561,17 +664,17 @@ def get_dashboard_html() -> str:
                         </div>
                         <div class="form-group">
                             <label>Daily Log Return (r_t)</label>
-                            <input type="number" id="sim-logret" step="0.001" value="-0.035">
-                            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">E.g. -0.035 represents a -3.5% single-day market drop</div>
+                            <input type="number" id="sim-logret" step="0.001" value="-0.038">
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">E.g. -0.038 represents a -3.8% single-day market plunge</div>
                         </div>
                         <div class="form-group">
                             <label>21-Day Realized Volatility (Annualized)</label>
-                            <input type="number" id="sim-rv21" step="0.01" value="0.38">
-                            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">E.g. 0.38 represents 38% annualized trailing volatility</div>
+                            <input type="number" id="sim-rv21" step="0.01" value="0.42">
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">E.g. 0.42 represents 42% annualized trailing volatility</div>
                         </div>
                         <div class="form-group">
                             <label>Volatility Ratio (5d Vol / 63d Vol)</label>
-                            <input type="number" id="sim-volratio" step="0.1" value="2.4">
+                            <input type="number" id="sim-volratio" step="0.1" value="2.6">
                             <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Values > 1.8 indicate acute short-term volatility shock</div>
                         </div>
                         <button class="btn-primary" onclick="runSimulation()">Execute Causal Filter</button>
@@ -595,7 +698,7 @@ def get_dashboard_html() -> str:
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem; margin-top: 1.5rem;">
-                            <span>Recommended Target Equity Weight (w_t):</span>
+                            <span>Recommended Equity Weight (w_t):</span>
                             <strong style="font-size: 1.5rem;" id="res-weight" class="value-amber">10.6%</strong>
                         </div>
                         <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-bottom: 1rem;">
@@ -611,41 +714,64 @@ def get_dashboard_html() -> str:
             </div>
         </section>
 
-        <!-- Static Visual Gallery -->
+        <!-- Static Visual Gallery with In-Page Modal (No Tab Redirects) -->
         <section id="gallery" style="margin-bottom: 2rem;">
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">Generated Publication Figure Gallery</span>
+                    <div>
+                        <span class="card-title">Publication Figure Gallery</span>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">Click any figure to expand in full-screen in-page lightbox (no new tab redirection)</div>
+                    </div>
                 </div>
                 <div class="gallery-grid">
-                    <div>
-                        <div style="font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem;">1. Causal Regime Probabilities</div>
-                        <a href="/static/figures/regime_probabilities.png" target="_blank">
-                            <img src="/static/figures/regime_probabilities.png" class="gallery-img" alt="Regime Probabilities">
-                        </a>
+                    <div class="gallery-item" onclick="openModal('/static/figures/regime_probabilities.png', '1. Causal Filtered Regime Probabilities & Asset Dynamics')">
+                        <img src="/static/figures/regime_probabilities.png" class="gallery-img" alt="Causal Regime Probabilities">
+                        <div class="gallery-caption">
+                            <span>1. Regime Probabilities</span>
+                            <span>Click to Zoom</span>
+                        </div>
                     </div>
-                    <div>
-                        <div style="font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem;">2. Cumulative Equity Curves</div>
-                        <a href="/static/figures/strategy_equity_curves.png" target="_blank">
-                            <img src="/static/figures/strategy_equity_curves.png" class="gallery-img" alt="Strategy Equity Curves">
-                        </a>
+                    <div class="gallery-item" onclick="openModal('/static/figures/strategy_equity_curves.png', '2. Strategy Cumulative Wealth Growth (NAV)')">
+                        <img src="/static/figures/strategy_equity_curves.png" class="gallery-img" alt="Strategy Cumulative Wealth">
+                        <div class="gallery-caption">
+                            <span>2. Cumulative Curves</span>
+                            <span>Click to Zoom</span>
+                        </div>
                     </div>
-                    <div>
-                        <div style="font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem;">3. Underwater Drawdowns</div>
-                        <a href="/static/figures/drawdowns.png" target="_blank">
-                            <img src="/static/figures/drawdowns.png" class="gallery-img" alt="Drawdowns">
-                        </a>
+                    <div class="gallery-item" onclick="openModal('/static/figures/drawdowns.png', '3. Underwater Drawdown Comparison')">
+                        <img src="/static/figures/drawdowns.png" class="gallery-img" alt="Underwater Drawdowns">
+                        <div class="gallery-caption">
+                            <span>3. Drawdowns</span>
+                            <span>Click to Zoom</span>
+                        </div>
                     </div>
-                    <div>
-                        <div style="font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem;">4. Exposure & Turnover Dynamics</div>
-                        <a href="/static/figures/exposure_turnover.png" target="_blank">
-                            <img src="/static/figures/exposure_turnover.png" class="gallery-img" alt="Exposure and Turnover">
-                        </a>
+                    <div class="gallery-item" onclick="openModal('/static/figures/exposure_turnover.png', '4. Portfolio Exposure & Turnover Dynamics')">
+                        <img src="/static/figures/exposure_turnover.png" class="gallery-img" alt="Exposure and Turnover">
+                        <div class="gallery-caption">
+                            <span>4. Exposure & Turnover</span>
+                            <span>Click to Zoom</span>
+                        </div>
+                    </div>
+                    <div class="gallery-item" onclick="openModal('/static/figures/bic_model_selection.png', '5. Bayesian Information Criterion (BIC) Selection Curves')">
+                        <img src="/static/figures/bic_model_selection.png" class="gallery-img" alt="BIC Model Selection">
+                        <div class="gallery-caption">
+                            <span>5. Model Selection</span>
+                            <span>Click to Zoom</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- In-Page Lightbox Modal (Does NOT redirect or open new tabs) -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-close" onclick="closeModal()">&times;</div>
+            <img class="modal-content" id="modalImg" src="" alt="Expanded Publication Figure">
+            <div id="modalCaption" class="modal-caption"></div>
+        </div>
+    </div>
 
     <footer>
         RegimeFlow Quantitative Research Engine &copy; 2026. Built strictly for scientific research and educational demonstration.
@@ -656,7 +782,7 @@ def get_dashboard_html() -> str:
         let equityChart = null;
         let drawdownChart = null;
         let regimeChart = null;
-        let currentScale = 'log';
+        let currentScale = 'linear';
 
         // Load data on page load
         document.addEventListener('DOMContentLoaded', async () => {
@@ -665,15 +791,49 @@ def get_dashboard_html() -> str:
 
         async function initializeDashboard() {
             try {
-                const response = await fetch('/api/data/timeseries');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch timeseries data');
+                // Fetch timeseries for charts
+                const resTs = await fetch('/api/data/timeseries');
+                if (resTs.ok) {
+                    const data = await resTs.json();
+                    renderCharts(data);
+                } else {
+                    console.warn('Timeseries endpoint error, falling back to mock');
+                    renderMockCharts();
                 }
-                const data = await response.json();
-                renderCharts(data);
+
+                // Fetch summary metrics
+                const resSum = await fetch('/api/data/summary');
+                if (resSum.ok) {
+                    const sumData = await resSum.json();
+                    updateKPIs(sumData);
+                }
             } catch (err) {
-                console.warn('API timeseries endpoint not ready, rendering synthetic preview curve:', err);
+                console.error('Failed to load live data, using synthetic fallback:', err);
                 renderMockCharts();
+            }
+        }
+
+        function updateKPIs(sumData) {
+            if (sumData.Regime_Aware_Risk_Control) {
+                const r = sumData.Regime_Aware_Risk_Control;
+                document.getElementById('kpi-regime-sharpe').innerText = r.sharpe_ratio.toFixed(3) + ' Sharpe';
+                document.getElementById('kpi-regime-cagr').innerText = (r.cagr * 100).toFixed(2) + '%';
+                document.getElementById('kpi-regime-vol').innerText = (r.annualized_volatility * 100).toFixed(2) + '%';
+                document.getElementById('kpi-regime-dd').innerText = (r.max_drawdown * 100).toFixed(2) + '%';
+            }
+            if (sumData.Buy_and_Hold) {
+                const b = sumData.Buy_and_Hold;
+                document.getElementById('kpi-bh-sharpe').innerText = b.sharpe_ratio.toFixed(3) + ' Sharpe';
+                document.getElementById('kpi-bh-cagr').innerText = (b.cagr * 100).toFixed(2) + '%';
+                document.getElementById('kpi-bh-vol').innerText = (b.annualized_volatility * 100).toFixed(2) + '%';
+                document.getElementById('kpi-bh-dd').innerText = (b.max_drawdown * 100).toFixed(2) + '%';
+            }
+            if (sumData.Moving_Average_200) {
+                const m = sumData.Moving_Average_200;
+                document.getElementById('kpi-ma-sharpe').innerText = m.sharpe_ratio.toFixed(3) + ' Sharpe';
+                document.getElementById('kpi-ma-cagr').innerText = (m.cagr * 100).toFixed(2) + '%';
+                document.getElementById('kpi-ma-vol').innerText = (m.annualized_volatility * 100).toFixed(2) + '%';
+                document.getElementById('kpi-ma-dd').innerText = (m.max_drawdown * 100).toFixed(2) + '%';
             }
         }
 
@@ -681,163 +841,213 @@ def get_dashboard_html() -> str:
             const labels = data.dates;
 
             // 1. Equity Chart
-            const ctxEquity = document.getElementById('equityChart').getContext('2d');
-            equityChart = new Chart(ctxEquity, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Regime-Aware Risk Control',
-                            data: data.nav_regime,
-                            borderColor: '#10b981',
-                            borderWidth: 2,
-                            pointRadius: 0,
-                            tension: 0.1
-                        },
-                        {
-                            label: 'Buy & Hold (SPY)',
-                            data: data.nav_bh,
-                            borderColor: '#38bdf8',
-                            borderWidth: 1.5,
-                            pointRadius: 0,
-                            tension: 0.1
-                        },
-                        {
-                            label: 'Moving Average (200-day)',
-                            data: data.nav_ma,
-                            borderColor: '#f59e0b',
-                            borderWidth: 1.5,
-                            pointRadius: 0,
-                            tension: 0.1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { display: false },
-                        y: {
-                            type: currentScale,
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8' }
-                        }
+            const ctxEquity = document.getElementById('equityChart');
+            if (ctxEquity) {
+                if (equityChart) equityChart.destroy();
+                equityChart = new Chart(ctxEquity.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Regime-Aware Risk Control',
+                                data: data.nav_regime,
+                                borderColor: '#10b981',
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Buy & Hold (SPY)',
+                                data: data.nav_bh,
+                                borderColor: '#38bdf8',
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Moving Average (200-day)',
+                                data: data.nav_ma,
+                                borderColor: '#f59e0b',
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                tension: 0.1
+                            }
+                        ]
                     },
-                    plugins: {
-                        legend: { labels: { color: '#f8fafc' } }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        scales: {
+                            x: {
+                                display: false
+                            },
+                            y: {
+                                type: currentScale,
+                                grid: { color: '#334155' },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    callback: val => Number(val).toFixed(1) + 'x'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: { color: '#f8fafc', font: { size: 11 } }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ctx.dataset.label + ': $' + Number(ctx.parsed.y).toFixed(2)
+                                }
+                            }
+                        }
                     }
-                }
-            });
+                });
+            }
 
             // 2. Drawdown Chart
-            const ctxDD = document.getElementById('drawdownChart').getContext('2d');
-            drawdownChart = new Chart(ctxDD, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Regime-Aware Drawdown',
-                            data: data.dd_regime,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            fill: true,
-                            borderWidth: 1.5,
-                            pointRadius: 0
+            const ctxDD = document.getElementById('drawdownChart');
+            if (ctxDD) {
+                if (drawdownChart) drawdownChart.destroy();
+                drawdownChart = new Chart(ctxDD.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Regime-Aware Drawdown',
+                                data: data.dd_regime,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                                fill: true,
+                                borderWidth: 1.5,
+                                pointRadius: 0
+                            },
+                            {
+                                label: 'Buy & Hold Drawdown',
+                                data: data.dd_bh,
+                                borderColor: '#f43f5e',
+                                backgroundColor: 'rgba(244, 63, 94, 0.15)',
+                                fill: true,
+                                borderWidth: 1.5,
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
                         },
-                        {
-                            label: 'Buy & Hold Drawdown',
-                            data: data.dd_bh,
-                            borderColor: '#f43f5e',
-                            backgroundColor: 'rgba(244, 63, 94, 0.1)',
-                            fill: true,
-                            borderWidth: 1.5,
-                            pointRadius: 0
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { display: false },
-                        y: {
-                            grid: { color: '#334155' },
-                            ticks: {
-                                color: '#94a3b8',
-                                callback: val => (val * 100).toFixed(0) + '%'
+                        scales: {
+                            x: { display: false },
+                            y: {
+                                type: 'linear',
+                                min: -0.65,
+                                max: 0.05,
+                                grid: { color: '#334155' },
+                                ticks: {
+                                    color: '#94a3b8',
+                                    callback: val => (Number(val) * 100).toFixed(0) + '%'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: { color: '#f8fafc', font: { size: 11 } }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => ctx.dataset.label + ': ' + (Number(ctx.parsed.y) * 100).toFixed(1) + '%'
+                                }
                             }
                         }
-                    },
-                    plugins: {
-                        legend: { labels: { color: '#f8fafc' } }
                     }
-                }
-            });
+                });
+            }
 
             // 3. Regime Timeline Chart
-            const ctxRegime = document.getElementById('regimeChart').getContext('2d');
-            regimeChart = new Chart(ctxRegime, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Causal High-Risk Prob P(Crisis)',
-                            data: data.high_risk_prob,
-                            borderColor: '#f43f5e',
-                            backgroundColor: 'rgba(244, 63, 94, 0.2)',
-                            fill: true,
-                            borderWidth: 1.5,
-                            pointRadius: 0,
-                            yAxisID: 'y1'
+            const ctxRegime = document.getElementById('regimeChart');
+            if (ctxRegime) {
+                if (regimeChart) regimeChart.destroy();
+                regimeChart = new Chart(ctxRegime.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Causal High-Risk Prob P(Crisis)',
+                                data: data.high_risk_prob,
+                                borderColor: '#f43f5e',
+                                backgroundColor: 'rgba(244, 63, 94, 0.25)',
+                                fill: true,
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                yAxisID: 'y1'
+                            },
+                            {
+                                label: 'SPY Cumulative Growth',
+                                data: data.prices,
+                                borderColor: '#38bdf8',
+                                borderWidth: 1.5,
+                                pointRadius: 0,
+                                yAxisID: 'y'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
                         },
-                        {
-                            label: 'SPY Asset Price',
-                            data: data.prices,
-                            borderColor: '#38bdf8',
-                            borderWidth: 1.5,
-                            pointRadius: 0,
-                            yAxisID: 'y'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8', maxTicksLimit: 12 }
+                        scales: {
+                            x: {
+                                grid: { color: '#334155' },
+                                ticks: { color: '#94a3b8', maxTicksLimit: 12 }
+                            },
+                            y: {
+                                type: 'linear',
+                                position: 'left',
+                                grid: { color: '#334155' },
+                                ticks: {
+                                    color: '#38bdf8',
+                                    callback: val => Number(val).toFixed(1) + 'x'
+                                },
+                                title: { display: true, text: 'SPY Growth', color: '#38bdf8' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                position: 'right',
+                                min: 0,
+                                max: 1.05,
+                                grid: { drawOnChartArea: false },
+                                ticks: {
+                                    color: '#f43f5e',
+                                    callback: val => (Number(val) * 100).toFixed(0) + '%'
+                                },
+                                title: { display: true, text: 'Causal Risk Prob', color: '#f43f5e' }
+                            }
                         },
-                        y: {
-                            type: 'logarithmic',
-                            position: 'left',
-                            grid: { color: '#334155' },
-                            ticks: { color: '#38bdf8' }
-                        },
-                        y1: {
-                            position: 'right',
-                            min: 0,
-                            max: 1,
-                            grid: { drawOnChartArea: false },
-                            ticks: {
-                                color: '#f43f5e',
-                                callback: val => (val * 100).toFixed(0) + '%'
+                        plugins: {
+                            legend: {
+                                labels: { color: '#f8fafc', font: { size: 11 } }
                             }
                         }
-                    },
-                    plugins: {
-                        legend: { labels: { color: '#f8fafc' } }
                     }
-                }
-            });
+                });
+            }
         }
 
         function renderMockCharts() {
-            // Generates synthetic preview points if timeseries API is booting
-            const count = 200;
+            const count = 150;
             const dates = [];
             const nav_regime = [1.0];
             const nav_bh = [1.0];
@@ -845,18 +1055,18 @@ def get_dashboard_html() -> str:
             const dd_regime = [0.0];
             const dd_bh = [0.0];
             const high_risk_prob = [];
-            const prices = [100.0];
+            const prices = [1.0];
 
             for (let i = 1; i < count; i++) {
-                dates.push('20' + String(Math.floor(i / 10) + 3).padStart(2, '0') + '-01');
-                const is_crisis = (i > 40 && i < 60) || (i > 140 && i < 155);
-                const r_bh = is_crisis ? (Math.random() * -0.04) : (Math.random() * 0.02 - 0.005);
-                const p_risk = is_crisis ? 0.85 + Math.random() * 0.1 : 0.05 + Math.random() * 0.1;
+                dates.push('20' + String(Math.floor(i / 7) + 5).padStart(2, '0') + '-' + String((i % 12) + 1).padStart(2, '0'));
+                const is_crisis = (i > 30 && i < 45) || (i > 95 && i < 110);
+                const r_bh = is_crisis ? (Math.random() * -0.035 - 0.005) : (Math.random() * 0.02 - 0.005);
+                const p_risk = is_crisis ? 0.85 + Math.random() * 0.12 : 0.04 + Math.random() * 0.08;
                 const r_regime = (1.0 - p_risk) * r_bh - 0.0001;
 
                 nav_bh.push(nav_bh[i - 1] * (1 + r_bh));
                 nav_regime.push(nav_regime[i - 1] * (1 + r_regime));
-                nav_ma.push(nav_ma[i - 1] * (1 + r_bh * 0.8));
+                nav_ma.push(nav_ma[i - 1] * (1 + r_bh * 0.85));
                 prices.push(prices[i - 1] * (1 + r_bh));
                 high_risk_prob.push(p_risk);
 
@@ -879,12 +1089,12 @@ def get_dashboard_html() -> str:
             });
         }
 
-        function toggleScale(scale) {
-            currentScale = scale;
-            document.getElementById('btn-scale-log').classList.toggle('active', scale === 'log');
-            document.getElementById('btn-scale-lin').classList.toggle('active', scale === 'linear');
-            if (equityChart) {
-                equityChart.options.scales.y.type = scale;
+        function setEquityScale(scaleType) {
+            currentScale = scaleType;
+            document.getElementById('btn-scale-lin').classList.toggle('active', scaleType === 'linear');
+            document.getElementById('btn-scale-log').classList.toggle('active', scaleType === 'logarithmic');
+            if (equityChart && equityChart.options && equityChart.options.scales && equityChart.options.scales.y) {
+                equityChart.options.scales.y.type = scaleType;
                 equityChart.update();
             }
         }
@@ -937,21 +1147,21 @@ def get_dashboard_html() -> str:
                     return;
                 }
             } catch (err) {
-                console.warn('API offline, calculating client-side forward estimation:', err);
+                console.warn('Backend inference error, using client estimation:', err);
             }
 
-            // Client-side fallback computation
+            // Client-side fallback calculation
             let p_risk = 0.05;
             if (vr > 1.8 || rv > 0.30 || r < -0.02) {
-                p_risk = Math.min(0.95, 0.4 + (vr / 3.0) * 0.3 + (rv / 0.5) * 0.25);
+                p_risk = Math.min(0.96, 0.45 + (vr / 3.0) * 0.3 + (rv / 0.5) * 0.25);
             } else if (r > 0 && rv < 0.15) {
-                p_risk = 0.05;
+                p_risk = 0.04;
             } else {
-                p_risk = 0.25;
+                p_risk = 0.22;
             }
             const weight = Math.max(0.0, Math.min(1.0, 1.0 - p_risk));
             const state = p_risk > 0.5 ? 2 : (p_risk > 0.2 ? 1 : 0);
-            updateSimUI(state, p_risk, weight, -4.12);
+            updateSimUI(state, p_risk, weight, -3.95);
         }
 
         function updateSimUI(state, p_risk, weight, ll) {
@@ -965,14 +1175,14 @@ def get_dashboard_html() -> str:
             riskEl.innerText = p_pct;
             fillEl.style.width = p_pct;
             weightEl.innerText = (weight * 100).toFixed(1) + '%';
-            llEl.innerText = ll.toFixed(3);
+            llEl.innerText = Number(ll).toFixed(3);
 
             if (p_risk > 0.6) {
                 stateEl.innerText = 'State ' + state + ' (High Risk / Crisis)';
                 stateEl.className = 'value-rose';
                 fillEl.style.backgroundColor = 'var(--accent-rose)';
             } else if (p_risk > 0.25) {
-                stateEl.innerText = 'State ' + state + ' (Elevated Dispersion)';
+                stateEl.innerText = 'State ' + state + ' (Elevated Volatility)';
                 stateEl.className = 'value-amber';
                 fillEl.style.backgroundColor = 'var(--accent-amber)';
             } else {
@@ -981,6 +1191,32 @@ def get_dashboard_html() -> str:
                 fillEl.style.backgroundColor = 'var(--accent-emerald)';
             }
         }
+
+        // In-page Lightbox Modal (Opens inside current window, zero tab redirects)
+        function openModal(imgSrc, captionText) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImg');
+            const modalCaption = document.getElementById('modalCaption');
+            if (modal && modalImg) {
+                modalImg.src = imgSrc;
+                modalCaption.innerText = captionText;
+                modal.classList.add('active');
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>

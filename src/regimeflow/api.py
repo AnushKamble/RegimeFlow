@@ -107,8 +107,9 @@ def create_app(
         oos_df = pd.read_csv(rd / "oos_predictions.csv", index_col=0)
         ret_df = pd.read_csv(rd / "strategy_returns.csv", index_col=0)
 
-        # Merge for consistency
+        # Merge for consistency and sanitize against NaN/inf
         merged = oos_df.join(ret_df, lsuffix="_oos", rsuffix="_ret", how="inner")
+        merged = merged.ffill().bfill().fillna(0.0)
 
         # Downsample to ~500 points for smooth browser rendering
         step = max(1, len(merged) // 500)
@@ -117,7 +118,8 @@ def create_app(
         # Calculate drawdowns
         def compute_dd(nav_series: pd.Series) -> List[float]:
             peaks = nav_series.cummax()
-            dd = (nav_series - peaks) / peaks
+            dd = (nav_series - peaks) / np.maximum(peaks, 1e-8)
+            dd = dd.fillna(0.0)
             return [float(x) for x in dd]
 
         prices_series = (
@@ -146,6 +148,7 @@ def create_app(
             raise HTTPException(status_code=404, detail="Strategy metrics not found")
 
         metrics_df = pd.read_csv(rd / "strategy_metrics.csv").set_index("strategy")
+        metrics_df = metrics_df.fillna(0.0)
         return metrics_df.to_dict(orient="index")
 
     # 5. Event Windows API
