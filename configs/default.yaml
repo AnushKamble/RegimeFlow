@@ -24,7 +24,7 @@ features:
   eps: 1.0e-8
 
 model:
-  n_states_candidates: [2, 3, 4]
+  n_states_candidates: [2, 3, 4, 5]
   covariance_type: full
   n_restarts: 3
   max_iter: 50
