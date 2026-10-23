@@ -1,0 +1,8 @@
+n_states_candidates: [2, 3, 4, 5]
+covariance_type: full
+n_restarts: 5
+max_iter: 100
+tol: 1.0e-4
+cov_regularization: 1.0e-4
+min_effective_occupancy: 0.02
+random_state: 42

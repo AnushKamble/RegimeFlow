@@ -1,0 +1,66 @@
+experiment_name: regimeflow_primary
+seed: 42
+output_dir: results
+
+data:
+  symbol: SPY
+  start_date: "2000-01-01"
+  end_date: null
+  source: yfinance
+  data_dir: data
+  cache_enabled: true
+  adjusted: true
+  synthetic_length: 1500
+  seed: 42
+
+features:
+  feature_group: base
+  vol_short_window: 5
+  vol_medium_window: 21
+  vol_long_window: 63
+  momentum_window: 21
+  gk_window: 5
+  volume_window: 63
+  eps: 1.0e-8
+
+model:
+  n_states_candidates: [2, 3, 4]
+  covariance_type: full
+  n_restarts: 3
+  max_iter: 50
+  tol: 1.0e-4
+  cov_regularization: 1.0e-4
+  min_effective_occupancy: 0.02
+  random_state: 42
+
+walk_forward:
+  train_window: 750
+  test_window: 126
+  step_size: 126
+  scaler_type: standard
+
+strategy:
+  cash_return: 0.0
+  transaction_cost_bps: 10.0
+  risk_threshold_multiplier: 1.0
+  min_weight: 0.0
+  max_weight: 1.0
+  moving_average_window: 200
+
+evaluation:
+  bootstrap_block_length: 21
+  bootstrap_replications: 1000
+  bootstrap_seed: 42
+  event_windows:
+    - name: GFC
+      start_date: "2007-08-01"
+      end_date: "2009-06-30"
+      description: "Global Financial Crisis"
+    - name: COVID
+      start_date: "2020-02-19"
+      end_date: "2020-04-30"
+      description: "COVID-19 Market Shock"
+    - name: INFLATION_2022
+      start_date: "2022-01-03"
+      end_date: "2022-12-30"
+      description: "2022 Inflation & Rate Hike Drawdown"

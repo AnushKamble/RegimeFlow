@@ -1,0 +1,9 @@
+symbol: SPY
+start_date: "2000-01-01"
+end_date: null
+source: yfinance
+data_dir: data
+cache_enabled: true
+adjusted: true
+synthetic_length: 1500
+seed: 42

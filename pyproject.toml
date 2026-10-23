@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "regimeflow"
+version = "0.1.0"
+description = "RegimeFlow: Probabilistic Market Regime Detection & Changepoint Engine"
+readme = "README.md"
+authors = [{ name = "RegimeFlow Research Team" }]
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "pandas>=2.0.0",
+    "matplotlib>=3.7.0",
+    "pyyaml>=6.0",
+    "pydantic>=2.0.0",
+    "yfinance>=0.2.0",
+]
+
+[project.optional-dependencies]
+comparators = [
+    "hmmlearn>=0.3.0",
+    "statsmodels>=0.14.0",
+    "ruptures>=1.1.0",
+    "scikit-learn>=1.2.0",
+]
+api = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+all = [
+    "regimeflow[comparators,api,dev]",
+]
+
+[project.scripts]
+regimeflow = "regimeflow.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --durations=10"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["regimeflow"]
+omit = ["tests/*"]

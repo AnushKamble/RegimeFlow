@@ -1,0 +1,4 @@
+train_window: 750
+test_window: 126
+step_size: 126
+scaler_type: standard

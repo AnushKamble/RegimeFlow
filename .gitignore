@@ -1,0 +1,43 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Packaging and environments
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+ENV/
+env/
+
+# Data and Cache (do not commit raw provider data or secrets)
+data/raw/
+data/cache/
+data/*.csv
+data/*.parquet
+!data/fixtures/
+
+# Generated experiment runs and outputs (keep lightweight summary or templates only)
+results/*
+!results/.gitkeep
+reports/generated/*
+!reports/.gitkeep
+
+# Secrets and local config
+.env
+*.pem
+*.key
+*.token
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

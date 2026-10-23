@@ -1,0 +1,15 @@
+# RegimeFlow Risk Register & Mitigation Controls
+
+| Risk ID | Risk Description | Severity | Likelihood | Consequence | Concrete Mitigation in RegimeFlow |
+|---|---|---|---|---|---|
+| **RSK-01** | HMM Numerical Underflow / Overflow | HIGH | HIGH | `NaN` in log-likelihoods, degenerate transition posteriors | Log-domain forward-backward recursions using `scipy.special.logsumexp`. Probability normalization bounds. |
+| **RSK-02** | Covariance Singularity / Ill-Conditioning | HIGH | MED | Cholesky factorization failure during emission evaluation | Positive-definite ridge floor ($\Sigma + \epsilon I$, $\epsilon \ge 10^{-6}$), adaptive jitter escalation up to $10^{-3}$, rejection of non-positive-definite restarts. |
+| **RSK-03** | State Identifiability & Permutation | HIGH | HIGH | Arbitrary state index swapping across folds invalidates label tracking | Hungarian bipartite matching on training emission profiles (volatility, return); explicit separation of raw IDs from risk mapping. |
+| **RSK-04** | Feature Look-Ahead Leakage | CRITICAL | MED | Overstated predictive log-likelihood and false backtest Sharpe | All features are strictly backward-looking trailing windows. Automated test perturbs $x_{>t}$ and asserts $P(z_t \mid x_{1:t})$ is invariant. |
+| **RSK-05** | Preprocessing Contamination | CRITICAL | MED | Future distributions leak into training scalers | Feature standardizers are fit strictly on training slice $[t_{train\_start}, t_{train\_end}]$ and frozen during test filtering. |
+| **RSK-06** | Strategy Execution Look-Ahead | CRITICAL | HIGH | Strategy earns return from the session whose close generated its signal | Explicit index lag: feature at close $t$ establishes weight $w_t$ which earns asset return $r_{t+1}$. Unit tested on hand-calculated 5-row toy series. |
+| **RSK-07** | Smoothed / Viterbi Leakage | HIGH | HIGH | Retrospective full-sequence state estimates used as online signals | Public API explicitly segregates `filter()` (causal) from `smooth()` and `decode_viterbi()` (retrospective). Primary strategy only consumes `filter()`. |
+| **RSK-08** | Offline Changepoint Misrepresentation | MED | MED | Claiming offline PELT detects changepoints online in real time | Explicitly labeling PELT as offline/retrospective baseline; online changepoints restricted to causal BOCPD. |
+| **RSK-09** | Data Provider Rate Limits / Service Down | MED | HIGH | Experiment pipeline fails or blocks offline runs | Robust disk cache with SHA-256 manifests, retry/backoff, and complete offline deterministic synthetic fallback generator. |
+| **RSK-10** | Overfitting via P-Hacking / Hyperparameter Hunting | HIGH | MED | Cherry-picked parameters yield unreplicable positive results | Predeclared candidate grid ($K \in \{2, 3, 4, 5\}$, fixed regularization, fixed cost bps, fixed event windows) locked before running final experiment. |
+| **RSK-11** | Failure to Outperform Benchmark | LOW | HIGH | Regime strategy yields lower return or higher drawdown after costs | Acknowledge as valid empirical result; provide honest diagnostic report detailing false alarms, lag costs, and whipsaws. |
