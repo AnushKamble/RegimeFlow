@@ -100,20 +100,35 @@ python -m regimeflow.cli download-data --config configs/default.yaml
 
 # 6. Run full chronological walk-forward experiment
 python -m regimeflow.cli run-experiment --config configs/default.yaml --profile full
+
+# 7. Launch the interactive visual web dashboard
+python -m regimeflow.cli dashboard --port 8000
 ```
 
 ---
 
-## 5. Causal API Service
+## 5. Visual Dashboard & Causal API Service
 
-RegimeFlow provides a production-grade FastAPI service exposing the causal forward filter:
+RegimeFlow includes a full visual web application and REST API served by FastAPI and Uvicorn:
 
 ```bash
-uvicorn regimeflow.api:app --host 0.0.0.0 --port 8000
+python -m regimeflow.cli dashboard --port 8000
+# Open http://127.0.0.1:8000/ in your browser
 ```
 
-### Endpoints
+### Dashboard Features
+- **Interactive KPI Cards:** Real-time metrics for Buy & Hold, 200-day Moving Average, and Regime-Aware Risk Control.
+- **Dynamic Chart.js Visualizations:** Cumulative wealth growth ($1 NAV) with log/linear scale toggle, underwater drawdown profiles, and causal risk probability vs. asset price.
+- **Historical Crisis Drill-down:** Metrics during GFC (2008), COVID-19 (2020), and 2022 rate hike cycles.
+- **Interactive Causal Playground:** Input custom log returns, realized volatility, and volatility ratios (or pick market presets) to test the causal forward filter live.
+- **Publication Gallery:** Direct browser viewing of all generated high-resolution figures.
+
+### REST Endpoints
+- `GET /` & `GET /dashboard`: Single-page interactive web dashboard.
 - `GET /health`: Health check and model metadata.
+- `GET /api/data/timeseries`: Downsampled out-of-sample timeseries for browser charting.
+- `GET /api/data/summary`: JSON summary metrics across evaluated strategies.
+- `GET /api/data/events`: Event window metrics for major historical crisis periods.
 - `POST /predict-regime`: Accepts sequential time-ordered feature history up to time $t$, updates forward recursion, and returns:
   ```json
   {
