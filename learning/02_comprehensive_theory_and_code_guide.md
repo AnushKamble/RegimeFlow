@@ -1,9 +1,9 @@
 # RegimeFlow — Comprehensive Quantitative ML & Market Regime Theory Guide
 ## From First-Principles Probabilities to Production-Grade Financial ML
 
-**Document ID:** `learning/02_comprehensive_theory_and_code_guide.md`  
-**Target Audience:** Quantitative Researchers, Machine Learning Engineers, Quant Developers, and Technical Interviewees  
-**Author:** Quantitative ML Engineering & Adversarial Review Team  
+**Document ID:** `learning/02_comprehensive_theory_and_code_guide.md`
+**Target Audience:** Quantitative Researchers, Machine Learning Engineers, Quant Developers, and Technical Interviewees
+**Author:** Quantitative ML Engineering & Adversarial Review Team
 **Scope:** Exhaustive pedagogical textbook covering mathematical derivations, algorithmic implementations, financial mechanics, statistical verification, and interview preparation.
 
 ---
@@ -51,7 +51,7 @@ Standard Normal vs. Financial Return Distribution:
 ```
 
 ### 1.2 What is a "Market Regime"?
-A market regime is a latent (unobservable) macroeconomic or behavioral state of the financial system characterized by persistent statistical properties. 
+A market regime is a latent (unobservable) macroeconomic or behavioral state of the financial system characterized by persistent statistical properties.
 
 Typically, markets fluctuate between at least two distinct regimes:
 1. **Low-Volatility Bull / Growth Regime:**
@@ -416,7 +416,7 @@ $$p_{\text{diag}} = K(K-1) + (K-1) + K \cdot d + K \cdot d$$
 ---
 
 ### 6.3 State Alignment & The Label Switching Problem
-HMM state labels are **permutation invariant**. The likelihood of the data is identical whether State 0 is labeled "Bull" and State 1 is "Bear", or vice versa. 
+HMM state labels are **permutation invariant**. The likelihood of the data is identical whether State 0 is labeled "Bull" and State 1 is "Bear", or vice versa.
 
 In a walk-forward harness where models are refit across 47 chronological folds, fold $m$ might call the crisis regime "State 0", while fold $m+1$ calls it "State 2". If a trading strategy blindly shorts State 0, it will alternate between shorting bull markets and buying bear markets!
 
@@ -451,7 +451,7 @@ Verdict: 100% Causal, Valid for Live Production.
 ### 7.1 Retrospective Smoothing ($P(z_t \mid x_{1:T})$)
 Smoothed probabilities are computed *after the entire sequence has concluded* using both the forward and backward passes:
 $$P(z_t = k \mid x_{1:T}) \propto \alpha_t(k) \beta_t(k)$$
-Notice that $\beta_t(k)$ incorporates $x_{t+1}, x_{t+2}, \dots, x_T$. 
+Notice that $\beta_t(k)$ incorporates $x_{t+1}, x_{t+2}, \dots, x_T$.
 
 > [!WARNING]
 > If you evaluate a trading strategy using smoothed probabilities or Viterbi paths, your model at time $t$ **already knows whether tomorrow will crash**. Your strategy will appear to miraculously exit positions at the exact top of the market. When deployed live, it will fail completely.
@@ -466,8 +466,8 @@ $$P(z_t = k \mid x_{1:t-1}) = \sum_{j=1}^K A_{jk} P(z_{t-1} = j \mid x_{1:t-1})$
 In RegimeFlow, we verify causality via an automated property-based test:
 1. Run the causal filter on a sequence $X_{1:T}$, recording $P(z_{100} \mid X_{1:100})$.
 2. Arbitrarily perturb future observations: $X_{101:T} \leftarrow X_{101:T} \times 10.0$.
-3. Re-run the causal filter. 
-4. **Result:** $P(z_{100} \mid X_{1:100})$ is **bitwise identical** ($\Delta = 0.0$). 
+3. Re-run the causal filter.
+4. **Result:** $P(z_{100} \mid X_{1:100})$ is **bitwise identical** ($\Delta = 0.0$).
 5. In contrast, the retrospective smoothed probability $P(z_{100} \mid X_{1:T})$ shifts dramatically.
 
 ---
@@ -686,7 +686,7 @@ INFLATION_2022,2022-01-03,2022-12-30,251,0.1075,0.0002,0.1076,-0.2447
 ### Category 1: Mathematics & Hidden Markov Models
 
 #### Q1: Walk me through the mathematical derivation of the Baum-Welch M-step update for the transition matrix $A_{ij}$.
-**Model Answer:**  
+**Model Answer:**
 In the EM framework, we construct the auxiliary function $Q(\theta, \theta^{(m)}) = \mathbb{E}_{Z \mid X, \theta^{(m)}} [\ln P(X, Z \mid \theta)]$. Isolating the terms involving $A_{ij}$:
 $$Q_A(A) = \sum_{t=1}^{T-1} \sum_{i=1}^K \sum_{j=1}^K \xi_t(i, j) \ln A_{ij}$$
 subject to the probability simplex constraint $\sum_{j=1}^K A_{ij} = 1$ for each row $i$. We construct the Lagrangian:
@@ -702,15 +702,15 @@ This is the expected number of transitions from state $i$ to state $j$ divided b
 ---
 
 #### Q2: Why is direct matrix inversion avoided when computing multivariate Gaussian log-emissions, and how does Cholesky factorization solve it?
-**Model Answer:**  
-Directly computing $\Sigma^{-1}$ is numerically unstable. If features exhibit sample collinearity, $\Sigma$ can become near-singular, resulting in negative eigenvalues or determinant underflow to $0.0$. 
+**Model Answer:**
+Directly computing $\Sigma^{-1}$ is numerically unstable. If features exhibit sample collinearity, $\Sigma$ can become near-singular, resulting in negative eigenvalues or determinant underflow to $0.0$.
 
 Instead, we compute the lower Cholesky factor $L L^T = \Sigma + \epsilon I$. The Mahalanobis distance $(x - \mu)^T \Sigma^{-1} (x - \mu)$ becomes $\| y \|_2^2$, where $y$ is obtained by solving the triangular system $L y = (x - \mu)$ via forward substitution. This requires $\mathcal{O}(d^2)$ operations, avoids matrix inversion entirely, and computes the log determinant directly as $2 \sum \ln(L_{ii})$.
 
 ---
 
 #### Q3: What is the computational complexity of the Forward-Backward algorithm vs. brute-force enumeration?
-**Model Answer:**  
+**Model Answer:**
 For a sequence of length $T$ with $K$ hidden states:
 - **Brute-Force Path Enumeration:** Evaluates all $K^T$ possible paths. At each step, computing the joint probability takes $\mathcal{O}(T)$, leading to total complexity $\mathcal{O}(T \cdot K^T)$, which is exponentially intractable.
 - **Forward-Backward Dynamic Programming:** Reuses intermediate subproblems. Computing $\alpha_t(k)$ from $\alpha_{t-1}$ requires summing over $K$ previous states for each of the $K$ current states ($\mathcal{O}(K^2)$). Over $T$ time steps, the complexity is $\mathcal{O}(T \cdot K^2)$ time and $\mathcal{O}(T \cdot K)$ space.
@@ -720,15 +720,15 @@ For a sequence of length $T$ with $K$ hidden states:
 ### Category 2: Quantitative Finance & Temporal Causality
 
 #### Q4: Why is it invalid to use smoothed probabilities ($P(z_t \mid x_{1:T})$) or Viterbi paths in backtesting a trading strategy?
-**Model Answer:**  
-Smoothed probabilities and Viterbi paths are *retrospective*. The backward variable $\beta_t = P(x_{t+1:T} \mid z_t)$ conditions the state at time $t$ on observations that have not yet occurred ($x_{t+1}, \dots, x_T$). In a backtest, using smoothed probabilities creates look-ahead leakage: the trading agent knows tomorrow's market outcome today. 
+**Model Answer:**
+Smoothed probabilities and Viterbi paths are *retrospective*. The backward variable $\beta_t = P(x_{t+1:T} \mid z_t)$ conditions the state at time $t$ on observations that have not yet occurred ($x_{t+1}, \dots, x_T$). In a backtest, using smoothed probabilities creates look-ahead leakage: the trading agent knows tomorrow's market outcome today.
 
 In live production, future observations do not exist. A valid trading signal must use exclusively the **causal forward filtered probability** $P(z_t \mid x_{1:t})$, which is strictly invariant to future data.
 
 ---
 
 #### Q5: Explain the execution timing convention used in RegimeFlow and why same-day execution is a form of leakage.
-**Model Answer:**  
+**Model Answer:**
 If a strategy observes market close $t$ (e.g. 4:00 PM EST), runs an ML model, and earns the return from close $t-1$ to close $t$, this is instantaneous backfilling ($T+0$ leakage). The return from $t-1$ to $t$ has already occurred before the close $t$ feature was observed.
 
 RegimeFlow enforces explicit 1-period execution lag:
@@ -740,8 +740,8 @@ RegimeFlow enforces explicit 1-period execution lag:
 ---
 
 #### Q6: How does continuous position sizing protect against whipsaw costs compared to binary thresholding?
-**Model Answer:**  
-A binary rule ($w_t = 1$ if $P < 0.5$, else $0$) acts as a discontinuous Heaviside step function. When market uncertainty causes filtered probabilities to fluctuate near the boundary ($0.49 \leftrightarrow 0.51$), the portfolio flips between 100% equity and 100% cash daily, racking up 100% turnover on every flip. 
+**Model Answer:**
+A binary rule ($w_t = 1$ if $P < 0.5$, else $0$) acts as a discontinuous Heaviside step function. When market uncertainty causes filtered probabilities to fluctuate near the boundary ($0.49 \leftrightarrow 0.51$), the portfolio flips between 100% equity and 100% cash daily, racking up 100% turnover on every flip.
 
 Continuous sizing ($w_t = 1 - P(\text{risk})$) creates smooth proportional adjustments. A shift from $0.49$ to $0.51$ results in only a $2\%$ position adjustment ($|\Delta w| = 0.02$), reducing turnover drag by 98% while still de-risking during sustained market panics.
 
@@ -750,7 +750,7 @@ Continuous sizing ($w_t = 1 - P(\text{risk})$) creates smooth proportional adjus
 ### Category 3: Machine Learning Engineering & Validation
 
 #### Q7: Why is standard K-fold cross-validation prohibited in financial time series, and how does Walk-Forward validation solve it?
-**Model Answer:**  
+**Model Answer:**
 Standard K-fold CV randomly partitions data. In time series, this causes future data to appear in the training fold while past data is in the validation fold. Due to volatility clustering and macroeconomic momentum, training on day $t+1$ and predicting day $t$ leaks forward information into the model.
 
 Walk-Forward validation enforces chronological boundaries: the model trains on $[t - W, t]$ and predicts strictly forward on $[t+1, t+H]$. The training window then rolls forward chronologically. All feature scaling and hyperparameters are locked using training data only.
@@ -758,7 +758,7 @@ Walk-Forward validation enforces chronological boundaries: the model trains on $
 ---
 
 #### Q8: What is the "label switching problem" in HMMs, and how does RegimeFlow guarantee cross-fold state consistency?
-**Model Answer:**  
+**Model Answer:**
 HMM state labels are arbitrary indices. Across different walk-forward folds, the EM algorithm may assign State 0 to low-volatility in Fold 1, but assign State 1 to low-volatility in Fold 2. If a downstream strategy relies on static state indices, it will invert its signals.
 
 RegimeFlow solves this by implementing canonical state alignment. After fitting, the states are sorted monotonically by their emission return variance ($\sigma_0^2 < \sigma_1^2 < \dots < \sigma_{K-1}^2$). State 0 is mathematically guaranteed to represent the lowest-volatility regime, and State $K-1$ the highest-risk crisis regime.
@@ -766,7 +766,7 @@ RegimeFlow solves this by implementing canonical state alignment. After fitting,
 ---
 
 #### Q9: Why is Circular Moving-Block Bootstrap required instead of standard IID bootstrap for evaluating Sharpe ratios?
-**Model Answer:**  
+**Model Answer:**
 Standard IID bootstrap draws individual daily returns with replacement, destroying the temporal order. This eliminates volatility clustering, serial autocorrelation, and GARCH effects, causing the bootstrap distribution of Sharpe ratios to be artificially tight and overconfident.
 
 The Circular Moving-Block Bootstrap samples contiguous blocks of length $L=21$ trading days (one calendar month). By drawing full blocks, it preserves the internal serial dependence, volatility memory, and non-normal joint distributions of the returns, providing mathematically valid confidence intervals.
@@ -776,16 +776,16 @@ The Circular Moving-Block Bootstrap samples contiguous blocks of length $L=21$ t
 ### Category 4: Software Architecture & Production
 
 #### Q10: How does RegimeFlow handle cryptographic data caching and data quality gates?
-**Model Answer:**  
-In [`src/regimeflow/data/cache.py`](file:///C:/Users/anush/OneDrive/Desktop/Project/Projects/AIML/Regime/src/regimeflow/data/cache.py), market data is stored as columnar Parquet files accompanied by a JSON manifest containing a SHA-256 cryptographic hash of the raw bytes. When loading, the file's hash is recomputed; if corruption or unauthorized tampering is detected, the cache is rejected. 
+**Model Answer:**
+In [`src/regimeflow/data/cache.py`](file:///C:/Users/anush/OneDrive/Desktop/Project/Projects/AIML/Regime/src/regimeflow/data/cache.py), market data is stored as columnar Parquet files accompanied by a JSON manifest containing a SHA-256 cryptographic hash of the raw bytes. When loading, the file's hash is recomputed; if corruption or unauthorized tampering is detected, the cache is rejected.
 
 Before reaching the model, data passes through [`validation.py`](file:///C:/Users/anush/OneDrive/Desktop/Project/Projects/AIML/Regime/src/regimeflow/data/validation.py), which enforces non-negotiable quality gates: strict timestamp monotonicity, bar consistency ($High \ge Low$, $High \ge \max(Open, Close)$, $Low \le \min(Open, Close)$), price positivity ($P > 0$), and detection of suspicious multi-day trading gaps.
 
 ---
 
 #### Q11: Explain the architecture of the RegimeFlow FastAPI service and how it ensures causal live inference.
-**Model Answer:**  
-The FastAPI service in [`src/regimeflow/api.py`](file:///C:/Users/anush/OneDrive/Desktop/Project/Projects/AIML/Regime/src/regimeflow/api.py) exposes a `/predict-regime` POST endpoint. It accepts a JSON payload of historical feature vectors strictly ordered by timestamp. 
+**Model Answer:**
+The FastAPI service in [`src/regimeflow/api.py`](file:///C:/Users/anush/OneDrive/Desktop/Project/Projects/AIML/Regime/src/regimeflow/api.py) exposes a `/predict-regime` POST endpoint. It accepts a JSON payload of historical feature vectors strictly ordered by timestamp.
 
 It validates timestamp monotonicity, loads the pre-trained fold scaler and Gaussian HMM, runs the causal forward filter recursion up to time $t$, and outputs the real-time filtered regime probabilities, recommended portfolio weight, and predictive log-likelihood. It contains zero retrospective smoothing code, ensuring production runtime safety.
 

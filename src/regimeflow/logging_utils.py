@@ -14,7 +14,7 @@ def setup_logger(
 ) -> logging.Logger:
     """
     Set up and return a structured logger.
-    
+
     Parameters
     ----------
     name : str
@@ -23,7 +23,7 @@ def setup_logger(
         Logging level (e.g. logging.INFO, logging.DEBUG).
     log_file : Optional[str]
         Optional file path to output logs to.
-        
+
     Returns
     -------
     logging.Logger

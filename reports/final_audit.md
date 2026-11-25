@@ -1,8 +1,8 @@
 # RegimeFlow — Comprehensive Adversarial Verification & Final Audit Report
 
-**Date:** 2026-10-23  
-**Auditor:** Quantitative ML Engineering & Adversarial Review Team  
-**Scope:** Complete RegimeFlow codebase, numerical inference algorithms, walk-forward evaluation protocol, feature engineering pipelines, strategy simulation, financial accounting, and reporting.  
+**Date:** 2026-10-23
+**Auditor:** Quantitative ML Engineering & Adversarial Review Team
+**Scope:** Complete RegimeFlow codebase, numerical inference algorithms, walk-forward evaluation protocol, feature engineering pipelines, strategy simulation, financial accounting, and reporting.
 **Audit Status:** **CERTIFIED — ZERO OPEN P0 / P1 DEFECTS**
 
 ---
@@ -100,7 +100,7 @@ The table below catalogs every substantive issue discovered during the engineeri
 | **DEF-003** | **P2** | `metrics/events.py` | Empty event windows on short synthetic runs caused `pandas.errors.EmptyDataError` when parsing `event_window_metrics.csv` because real crisis dates did not overlap. | Added schema-preserving guards in `analyze_event_windows` and `build_research_report` to ensure standard column headers are always written. | `test_diagnostics_and_events.py::test_event_window_study_on_synthetic_data` passed cleanly. |
 | **DEF-004** | **P1** | `models/gaussian_emissions.py` | Empirical covariance matrices under small state occupancies occasionally lost positive definiteness, causing `LinAlgError` during inversion. | Implemented `regularize_covariance` using lower Cholesky decomposition $L L^T = \Sigma_{\text{sym}} + \epsilon I$ with adaptive jitter escalation and eigenvalue floor clipping, and evaluated Mahalanobis distance via `solve_triangular`. | `test_hmm_math.py::test_covariance_regularization_spd` passed with ill-conditioned matrices. |
 | **DEF-005** | **P0** | `validation/walk_forward.py` | Potential look-ahead leakage if retrospective smoothed probabilities $P(z_t \mid x_{1:T})$ were used for trading signals instead of online causal filtered probabilities $P(z_t \mid x_{1:t})$. | Strictly separated `filtered_proba` from `smoothed_proba`. Enforced that out-of-sample prediction streams only expose online filtered probabilities and one-step predictive log-likelihoods. | `test_walk_forward.py::test_walk_forward_execution_and_causal_invariance` confirmed causal invariance under future perturbations. |
-| **DEF-006** | **P0** | `strategy/backtest.py` | Potential look-ahead timing leakage if strategy weight $w_t$ formed at close $t$ immediately earned return $r_t$. | Implemented explicit 1-period execution lag where weight $w_t$ earns return $r_{t+1}$. Rebalance turnover costs $|\Delta w_t| \times c_{\text{bps}}$ deducted at every transition. | Verified by `test_hand_calculated_execution_lag_and_turnover_costs` against independent manual arithmetic. |
+| **DEF-006** | **P0** | `strategy/backtest.py` | Potential look-ahead timing leakage if strategy weight $w_t$ formed at close $t$ immediately earned return $r_t$. | Implemented explicit 1-period execution lag where weight $w_t$ earns return $r_{t+1}$. Rebalance turnover costs $\|\Delta w_t\| \times c_{\text{bps}}$ deducted at every transition. | Verified by `test_hand_calculated_execution_lag_and_turnover_costs` against independent manual arithmetic. |
 | **DEF-007** | **P2** | `models/gaussian_hmm.py` | Discrepancy between BIC parameter counting formulas for diagonal vs. full covariance structures. | Explicitly formalized parameter counts: $p_{\text{diag}} = K(K-1) + (K-1) + 2Kd$ vs $p_{\text{full}} = K(K-1) + (K-1) + Kd + Kd(d+1)/2$. | `test_selection_and_reference.py::test_parameter_count_formulas` verified counts across multiple dimensions. |
 | **DEF-008** | **P3** | `features/transforms.py` | `BaseTrainOnlyScaler` used `raise NotImplementedError` in abstract method definitions. | Refactored using standard library `abc.ABC` and `@abstractmethod` decorators to enforce static type contracts. | Clean import and type-check verified across all modules. |
 

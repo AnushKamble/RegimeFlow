@@ -1,8 +1,8 @@
 # Decision Record 0001: Core Probabilistic Modeling, Causal Inference, and Strategy Timing Conventions
 
-**Date:** 2026-10-23  
-**Status:** Accepted  
-**Deciders:** Senior ML Engineer, Quantitative Research Engineer  
+**Date:** 2026-10-23
+**Status:** Accepted
+**Deciders:** Senior ML Engineer, Quantitative Research Engineer
 
 ---
 

@@ -67,7 +67,7 @@ def create_app(
 
     # In-memory model reference
     app.state.model = model
-    
+
     # Locate experiment run directory
     resolved_run_dir = Path(run_dir) if run_dir else _find_latest_run_dir()
     app.state.run_dir = resolved_run_dir

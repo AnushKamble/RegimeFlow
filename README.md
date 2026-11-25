@@ -1,6 +1,7 @@
-﻿# RegimeFlow â€” Probabilistic Market Regime Detection & Changepoint Engine
+﻿# RegimeFlow — Probabilistic Market Regime Detection & Changepoint Engine
 
 [![CI](https://github.com/AnushKamble/RegimeFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/AnushKamble/RegimeFlow/actions/workflows/ci.yml)
+[![Live Dashboard](https://img.shields.io/badge/Live_Dashboard-Interactive_Visualizer-success?logo=googlechrome&logoColor=white)](https://anushkamble.github.io/RegimeFlow/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)]()
@@ -146,7 +147,7 @@ python -m regimeflow.cli dashboard --port 8000
 
 ---
 
-## 6. Empirical Results & Walk-Forward Benchmark (SPY 2000â€“2026)
+## 6. Empirical Results & Walk-Forward Benchmark (SPY 2000–2026)
 
 Evaluated across **5,922 out-of-sample trading sessions** across **47 chronological folds** with strict 1-period execution delay and 10.0 bps turnover transaction costs:
 
@@ -165,7 +166,7 @@ Evaluated across **5,922 out-of-sample trading sessions** across **47 chronologi
 ## 7. Scientific Limitations & Failure Modes
 
 1. **Latent States are Statistical Constructs:** Market regimes are not physical truths. State labels are permutation-invariant and can split or merge across folds.
-2. **Reactive Lag:** Causal forward filtering requires incoming volatility signals to update posteriors. Sudden exogenous shocks manifest a 1â€“2 session detection delay.
+2. **Reactive Lag:** Causal forward filtering requires incoming volatility signals to update posteriors. Sudden exogenous shocks manifest a 1–2 session detection delay.
 3. **Transaction Costs:** Continuous exposure adjustments outperform binary switches by mitigating whipsaw drag in choppy, mean-reverting markets.
 4. **No Guarantees:** Regime detection is an exploratory risk-management tool, not a get-rich-quick trading algorithm.
 
@@ -173,7 +174,7 @@ Evaluated across **5,922 out-of-sample trading sessions** across **47 chronologi
 
 ## 8. Portfolio & Resume-Ready Engineering Bullets
 
-- *Implemented a multivariate Gaussian HMM from scratch in Python/NumPy/SciPy, including log-domain Baumâ€“Welch EM, Cholesky factorization, Viterbi decoding, and train-only BIC state selection.*
+- *Implemented a multivariate Gaussian HMM from scratch in Python/NumPy/SciPy, including log-domain Baum–Welch EM, Cholesky factorization, Viterbi decoding, and train-only BIC state selection.*
 - *Architected a chronological walk-forward evaluation harness with causal online filtering and automated future-perturbation invariance tests, eliminating look-ahead leakage across 47 chronological folds (5,922 out-of-sample trading sessions on SPY).*
 - *Engineered a regime-aware risk-control backtest with strict 1-period signal lag and turnover transaction costs; improved out-of-sample Sharpe from 0.535 (Buy & Hold) to 0.820 and cut maximum drawdown from -59.58% to -27.23%, with uncertainty assessed via Circular Moving-Block Bootstrap.*
 - *Outperformed static Gaussian density forecasts by +1.199 log-likelihood points per session out-of-sample while identifying elevated risk regimes across major market crises (88.1% risk during GFC, 87.8% during COVID-19).*

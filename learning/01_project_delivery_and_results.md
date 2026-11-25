@@ -1,10 +1,10 @@
 # RegimeFlow — Project Delivery & Experimental Evaluation Report
 
-**Document ID:** `learning/01_project_delivery_and_results.md`  
-**Project:** RegimeFlow — Probabilistic Market Regime Detection & Changepoint Engine  
-**Author:** Quantitative ML Engineering & Adversarial Review Team  
-**Date:** 2026-10-23  
-**Status:** Certified Complete — Zero Open P0/P1 Defects  
+**Document ID:** `learning/01_project_delivery_and_results.md`
+**Project:** RegimeFlow — Probabilistic Market Regime Detection & Changepoint Engine
+**Author:** Quantitative ML Engineering & Adversarial Review Team
+**Date:** 2026-10-23
+**Status:** Certified Complete — Zero Open P0/P1 Defects
 
 ---
 

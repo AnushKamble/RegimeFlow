@@ -160,7 +160,7 @@ def get_dashboard_html() -> str:
         .value-rose { color: var(--accent-rose); }
         .value-amber { color: var(--accent-amber); }
         .value-purple { color: var(--accent-purple); }
-        
+
         .grid-charts {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -217,7 +217,7 @@ def get_dashboard_html() -> str:
         tr:hover td {
             background-color: rgba(255, 255, 255, 0.02);
         }
-        
+
         /* Simulator playground */
         .simulator-grid {
             display: grid;
@@ -290,7 +290,7 @@ def get_dashboard_html() -> str:
             height: 100%;
             transition: width 0.4s ease, background-color 0.4s ease;
         }
-        
+
         /* Gallery grid and in-page modal lightbox */
         .gallery-grid {
             display: grid;
@@ -449,8 +449,8 @@ def get_dashboard_html() -> str:
                     </div>
                     <div class="card-value value-emerald" id="kpi-regime-sharpe">0.820 Sharpe</div>
                     <div class="card-subtitle">
-                        CAGR: <strong style="color: white;" id="kpi-regime-cagr">10.16%</strong> | 
-                        Ann. Vol: <strong style="color: white;" id="kpi-regime-vol">12.38%</strong> | 
+                        CAGR: <strong style="color: white;" id="kpi-regime-cagr">10.16%</strong> |
+                        Ann. Vol: <strong style="color: white;" id="kpi-regime-vol">12.38%</strong> |
                         Max DD: <strong class="value-emerald" id="kpi-regime-dd">-27.23%</strong>
                     </div>
                 </div>
@@ -462,8 +462,8 @@ def get_dashboard_html() -> str:
                     </div>
                     <div class="card-value value-blue" id="kpi-bh-sharpe">0.535 Sharpe</div>
                     <div class="card-subtitle">
-                        CAGR: <strong style="color: white;" id="kpi-bh-cagr">9.88%</strong> | 
-                        Ann. Vol: <strong style="color: white;" id="kpi-bh-vol">18.47%</strong> | 
+                        CAGR: <strong style="color: white;" id="kpi-bh-cagr">9.88%</strong> |
+                        Ann. Vol: <strong style="color: white;" id="kpi-bh-vol">18.47%</strong> |
                         Max DD: <strong class="value-rose" id="kpi-bh-dd">-59.58%</strong>
                     </div>
                 </div>
@@ -475,8 +475,8 @@ def get_dashboard_html() -> str:
                     </div>
                     <div class="card-value value-amber" id="kpi-ma-sharpe">0.640 Sharpe</div>
                     <div class="card-subtitle">
-                        CAGR: <strong style="color: white;" id="kpi-ma-cagr">7.43%</strong> | 
-                        Ann. Vol: <strong style="color: white;" id="kpi-ma-vol">11.61%</strong> | 
+                        CAGR: <strong style="color: white;" id="kpi-ma-cagr">7.43%</strong> |
+                        Ann. Vol: <strong style="color: white;" id="kpi-ma-vol">11.61%</strong> |
                         Max DD: <strong style="color: white;" id="kpi-ma-dd">-23.06%</strong>
                     </div>
                 </div>
@@ -488,7 +488,7 @@ def get_dashboard_html() -> str:
                     </div>
                     <div class="card-value value-purple">+1.199 pts</div>
                     <div class="card-subtitle">
-                        Custom HMM LL: <strong style="color: white;">-4.208</strong> vs. 
+                        Custom HMM LL: <strong style="color: white;">-4.208</strong> vs.
                         Static Baseline: <strong style="color: white;">-5.407</strong> (log points/session)
                     </div>
                 </div>
